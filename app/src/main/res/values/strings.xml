@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Login</string>
+    <string name="title_activity_contrasena">ContrasenaActivity</string>
+    <string name="title_activity_registro">RegistroActivity</string>
+    <string name="title_activity_principal">PrincipalActivity</string>
+    <string name="title_activity_actualizar_datos">ActualizarDatosActivity</string>
+</resources>
