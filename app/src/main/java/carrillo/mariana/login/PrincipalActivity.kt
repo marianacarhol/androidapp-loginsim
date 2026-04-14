@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,31 +34,38 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
 
 class PrincipalActivity : ComponentActivity() {
+
+    private lateinit var myRef: DatabaseReference
+    private val reloadKey = mutableStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        //var correo = intent.getStringExtra("correo") ?: "anonimo"
-
-        var uid = Firebase.auth.currentUser?.uid ?: ""
-
-        var myRef = Firebase.database.getReference("usuarios").child(uid)
+        val uid = Firebase.auth.currentUser?.uid ?: ""
+        myRef = Firebase.database.getReference("usuarios").child(uid)
 
         setContent {
             LoginTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     PantallaInicio(
                         myRef,
+                        reloadKey = reloadKey.value,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        reloadKey.value++
+    }
 }
 
 @Composable
-fun PantallaInicio(myRef: DatabaseReference, modifier: Modifier = Modifier) {
+fun PantallaInicio(myRef: DatabaseReference, reloadKey: Int, modifier: Modifier = Modifier) {
 
     var nombre by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
@@ -65,11 +73,13 @@ fun PantallaInicio(myRef: DatabaseReference, modifier: Modifier = Modifier) {
     var fechanac by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    myRef.get().addOnSuccessListener { snapshot ->
-        nombre = snapshot.child("name").value.toString()
-        correo = snapshot.child("correo").value.toString()
-        edad = snapshot.child("edad").value.toString()
-        fechanac = snapshot.child("fechanac").value.toString()
+    LaunchedEffect(reloadKey) {
+        myRef.get().addOnSuccessListener { snapshot ->
+            nombre = snapshot.child("name").value.toString()
+            correo = snapshot.child("correo").value.toString()
+            edad = snapshot.child("edad").value.toString()
+            fechanac = snapshot.child("fechanac").value.toString()
+        }
     }
 
     Column(
